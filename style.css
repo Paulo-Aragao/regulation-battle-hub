@@ -155,21 +155,39 @@ main {
 }
 
 #modalCardDetails {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start; /* Impede que as CÉLULAS da grade se estiquem */
 }
 
+/* 2. A Imagem Dentro do Modal (ESTA É A PARTE MAIS IMPORTANTE) */
 #modalCardDetails img {
-    max-width: 300px;
-    width: 100%;
-    border-radius: 10px;
+  /* Ocupa 100% da LARGURA da sua coluna (que tem 300px) */
+  width: 100%;
+  
+  /* ========= MUDANÇA CRUCIAL ========= */
+  /* Força a ALTURA a ser calculada automaticamente com base na proporção da imagem.
+     Isso IGNORA a altura da célula da grade e do texto ao lado. */
+  height: auto;
+  
+  display: block; /* Boa prática para imagens */
+  border-radius: 10px;
 }
 
+/* 3. O Bloco de Informações (sem alterações necessárias) */
 #modalCardDetails .info {
-    flex: 1;
-    min-width: 300px;
+    min-width: 0;
 }
+
+
+/* 4. A Regra para Responsividade (Layout de 1 coluna em telas pequenas) */
+@media (max-width: 700px) {
+  #modalCardDetails {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 #modalCardDetails h2 {
     margin-top: 0;
