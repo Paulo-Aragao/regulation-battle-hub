@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
             const label = key.charAt(0).toUpperCase() + key.slice(1);
-            defaultOption.textContent = `Todos os ${label}s`;
+            defaultOption.textContent = `${label}s`;
             select.appendChild(defaultOption);
 
             values.forEach(value => {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             select.dataset.filterKey = 'digi_type'; 
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = 'Todos os Digi-Types';
+            defaultOption.textContent = 'Archtypes';
             select.appendChild(defaultOption);
             sortedDigiTypes.forEach(value => {
                 const option = document.createElement('option');
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = 'Todos os Sets';
+            defaultOption.textContent = 'Sets';
             select.appendChild(defaultOption);
 
             sortedSets.forEach(value => {
