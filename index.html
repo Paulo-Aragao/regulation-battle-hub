@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Cartas Digimon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Digimon Card Game - Hub</h1>
+    </header>
+
+    <main>
+        <div class="controls-container">
+            <input type="search" id="searchInput" placeholder="Buscar por nome, ID, atributo...">
+            <div id="filtersContainer">
+                </div>
+        </div>
+
+        <div id="cardGrid">
+            </div>
+
+        <div id="pagination">
+            </div>
+    </main>
+
+    <div id="modalOverlay" class="hidden">
+        <div id="modalContent">
+            <button id="closeModalBtn">&times;</button>
+            <div id="modalCardDetails">
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
