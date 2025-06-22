@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Referências aos elementos do DOM
     const cardGrid = document.getElementById('cardGrid');
     const searchInput = document.getElementById('searchInput');
     const filtersContainer = document.getElementById('filtersContainer');
@@ -9,17 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('closeModalBtn');
     const modalCardDetails = document.getElementById('modalCardDetails');
 
-    // Estado da aplicação
     let allCards = [];
     let filteredCards = [];
     let currentPage = 1;
     const cardsPerPage = 100;
     const activeFilters = {};
 
-    // URL da API de imagens
     const imageUrlBase = 'https://images.digimoncard.io/images/cards/';
 
-    // Função principal para buscar e inicializar os dados
     async function initializeApp() {
         try {
             const response = await fetch('./data/digimon_cards_full.json');
@@ -35,11 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Cria os selects de filtro dinamicamente
     function populateFilters() {
-        const filterKeys = ['type', 'color', 'rarity', 'attribute'];
+        const filterKeys = ['type', 'color', 'rarity', 'attribute', 'level'];
         filterKeys.forEach(key => {
-            const values = [...new Set(allCards.map(card => card[key]).filter(Boolean))].sort();
+            
+            const isNumeric = key === 'level';
+            let values = [...new Set(allCards.map(card => card[key]).filter(val => val !== null && val !== undefined))];
+            
+            if (isNumeric) {
+                values.sort((a, b) => a - b);
+            } else {
+                values.sort();
+            }
             
             const select = document.createElement('select');
             select.classList.add('filter-select');
@@ -47,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = `Todos os ${key.charAt(0).toUpperCase() + key.slice(1)}s`;
+            const label = key.charAt(0).toUpperCase() + key.slice(1);
+            defaultOption.textContent = `Todos os ${label}s`;
             select.appendChild(defaultOption);
 
             values.forEach(value => {
@@ -58,9 +62,54 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             filtersContainer.appendChild(select);
         });
+
+        const allDigiTypes = new Set(
+            allCards.flatMap(card => [card.digi_type, card.digi_type2]).filter(Boolean)
+        );
+
+        if (allDigiTypes.size > 0) {
+            const sortedDigiTypes = [...allDigiTypes].sort();
+            const select = document.createElement('select');
+            select.classList.add('filter-select');
+            select.dataset.filterKey = 'digi_type'; 
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Todos os Digi-Types';
+            select.appendChild(defaultOption);
+            sortedDigiTypes.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+            filtersContainer.appendChild(select);
+        }
+        
+        const allSets = new Set(
+            allCards.flatMap(card => card.set_name).filter(Boolean)
+        );
+
+        if (allSets.size > 0) {
+            const sortedSets = [...allSets].sort();
+            const select = document.createElement('select');
+            select.classList.add('filter-select');
+            select.dataset.filterKey = 'set_name';
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Todos os Sets';
+            select.appendChild(defaultOption);
+
+            sortedSets.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+            filtersContainer.appendChild(select);
+        }
     }
 
-    // Adiciona os event listeners para interatividade
     function addEventListeners() {
         searchInput.addEventListener('input', handleFiltering);
         filtersContainer.addEventListener('change', handleFiltering);
@@ -70,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModalBtn.addEventListener('click', closeModal);
     }
 
-    // Função central que aplica filtros e busca
+    // Substitua a função inteira no seu script.js
     function handleFiltering(event) {
         const filterKey = event.target.dataset.filterKey;
         if (filterKey) {
@@ -80,16 +129,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchTerm = searchInput.value.toLowerCase().trim();
 
         filteredCards = allCards.filter(card => {
-            // Lógica de busca
+            // Lógica de busca por texto
             const searchMatch = !searchTerm ||
                 card.name.toLowerCase().includes(searchTerm) ||
                 card.id.toLowerCase().includes(searchTerm) ||
                 (card.attribute && card.attribute.toLowerCase().includes(searchTerm)) ||
-                (card.digi_type && card.digi_type.toLowerCase().includes(searchTerm));
+                (card.digi_type && card.digi_type.toLowerCase().includes(searchTerm)) ||
+                (card.digi_type2 && card.digi_type2.toLowerCase().includes(searchTerm));
 
-            // Lógica de filtros
+            // Lógica dos filtros <select>
             const filterMatch = Object.entries(activeFilters).every(([key, value]) => {
-                return !value || card[key] === value;
+                if (!value) return true; // Se o valor for "" (Todos), não filtra
+
+                // Lógica para o filtro 'digi_type'
+                if (key === 'digi_type') {
+                    return card.digi_type === value || card.digi_type2 === value;
+                }
+
+                // --- LÓGICA NOVA PARA O FILTRO 'SET' ---
+                // Verifica se o array set_name da carta inclui o set selecionado
+                if (key === 'set_name') {
+                    return Array.isArray(card.set_name) && card.set_name.includes(value);
+                }
+                
+                // --- LÓGICA NOVA PARA O FILTRO 'LEVEL' ---
+                // Compara o valor como número, não como texto
+                if (key === 'level') {
+                    return card.level == value; // Usar '==' aqui lida com a coerção de tipo (ex: 7 == "7")
+                }
+
+                // Lógica padrão para os outros filtros
+                return card[key] === value;
             });
 
             return searchMatch && filterMatch;
@@ -99,15 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPage();
     }
     
-    // Renderiza a página atual com os cards e a paginação
+
     function renderPage() {
         renderCardGrid();
         renderPagination();
     }
 
-    // Renderiza a grade de cards
     function renderCardGrid() {
-        cardGrid.innerHTML = ''; // Limpa a grade
+        cardGrid.innerHTML = ''; 
         const startIndex = (currentPage - 1) * cardsPerPage;
         const endIndex = startIndex + cardsPerPage;
         const cardsToRender = filteredCards.slice(startIndex, endIndex);
@@ -127,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cardImage.src = `${imageUrlBase}${card.id}.jpg`;
             cardImage.alt = card.name;
             cardImage.className = 'card-image';
-            cardImage.loading = 'lazy'; // Otimização de performance
+            cardImage.loading = 'lazy';
 
             cardContainer.appendChild(cardImage);
             cardContainer.addEventListener('click', () => showModal(card.id));
@@ -136,13 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cardGrid.appendChild(fragment);
     }
     
-    // Renderiza os controles de paginação
     function renderPagination() {
         paginationContainer.innerHTML = '';
         const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
         if (totalPages <= 1) return;
 
-        // Botão "Anterior"
         const prevButton = document.createElement('button');
         prevButton.textContent = 'Anterior';
         prevButton.className = 'page-btn';
@@ -155,12 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         paginationContainer.appendChild(prevButton);
 
-        // Indicador de página
         const pageIndicator = document.createElement('span');
         pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
         paginationContainer.appendChild(pageIndicator);
         
-        // Botão "Próximo"
         const nextButton = document.createElement('button');
         nextButton.textContent = 'Próximo';
         nextButton.className = 'page-btn';
@@ -174,7 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
         paginationContainer.appendChild(nextButton);
     }
 
-    // Mostra o modal com os detalhes do card
      function showModal(cardId) {
         const card = allCards.find(c => c.id === cardId);
         if (!card) return;
@@ -182,13 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const formatEffectText = (text) => {
         if (!text) return '';
 
-        // Formata textos entre colchetes (ex: [On Play])
         let formattedText = text.replace(/\[(.*?)\]/g, '<span class="effect-trigger">[$1]</span>');
 
-        // Formata textos entre sinais de menor e maior (ex: <Blocker>)
         formattedText = formattedText.replace(/＜(.*?)＞/g, '<span class="effect-keyword">＜$1＞</span>');
 
-        return formattedText.replace(/\n/g, '<br>'); // Mantém quebras de linha
+        return formattedText.replace(/\n/g, '<br>');
         };
 
         const setNameHtml = Array.isArray(card.set_name) ? card.set_name.join(', ') : card.set_name;
@@ -214,11 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOverlay.classList.remove('hidden');
         }
 
-    // Fecha o modal
     function closeModal() {
         modalOverlay.classList.add('hidden');
     }
 
-    // Inicia a aplicação
     initializeApp();
 });
