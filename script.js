@@ -175,30 +175,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Mostra o modal com os detalhes do card
-    function showModal(cardId) {
+     function showModal(cardId) {
         const card = allCards.find(c => c.id === cardId);
         if (!card) return;
 
+        const formatEffectText = (text) => {
+        if (!text) return '';
+
+        // Formata textos entre colchetes (ex: [On Play])
+        let formattedText = text.replace(/\[(.*?)\]/g, '<span class="effect-trigger">[$1]</span>');
+
+        // Formata textos entre sinais de menor e maior (ex: <Blocker>)
+        formattedText = formattedText.replace(/＜(.*?)＞/g, '<span class="effect-keyword">＜$1＞</span>');
+
+        return formattedText.replace(/\n/g, '<br>'); // Mantém quebras de linha
+        };
+
+        const setNameHtml = Array.isArray(card.set_name) ? card.set_name.join(', ') : card.set_name;
+
         modalCardDetails.innerHTML = `
-            <img src="${imageUrlBase}${card.id}.jpg" alt="${card.name}">
-            <div class="info">
-                <h2>${card.name} (${card.id})</h2>
-                <p><strong>Tipo:</strong> ${card.type || 'N/A'}</p>
-                <p><strong>Cor:</strong> ${card.color || 'N/A'}</p>
-                <p><strong>Raridade:</strong> ${card.rarity.toUpperCase()}</p>
-                <p><strong>Set:</strong> ${card.set_name.join(', ') || 'N/A'}</p>
-                ${card.level ? `<p><strong>Nível:</strong> ${card.level}</p>` : ''}
-                ${card.dp ? `<p><strong>DP:</strong> ${card.dp}</p>` : ''}
-                ${card.play_cost ? `<p><strong>Custo de Jogo:</strong> ${card.play_cost}</p>` : ''}
-                ${card.attribute ? `<p><strong>Atributo:</strong> ${card.attribute}</p>` : ''}
-                ${card.form ? `<p><strong>Forma:</strong> ${card.form}</p>` : ''}
-                <hr>
-                ${card.main_effect ? `<p><strong>Efeito Principal:</strong><br>${card.main_effect}</p>` : ''}
-                ${card.source_effect ? `<p><strong>Efeito de Fonte (Segurança):</strong><br>${card.source_effect}</p>` : ''}
-            </div>
+        <img src="${imageUrlBase}${card.id}.jpg" alt="${card.name}">
+        <div class="info">
+            <h2>${card.name} (${card.id})</h2>
+            <p><strong>Tipo:</strong> ${card.type || 'N/A'}</p>
+            <p><strong>Cor:</strong> ${card.color || 'N/A'}</p>
+            <p><strong>Raridade:</strong> ${card.rarity ? card.rarity.toUpperCase() : 'N/A'}</p>
+            <p><strong>Set:</strong> ${setNameHtml || 'N/A'}</p>
+            ${card.level ? `<p><strong>Nível:</strong> ${card.level}</p>` : ''}
+            ${card.dp ? `<p><strong>DP:</strong> ${card.dp}</p>` : ''}
+            ${card.play_cost ? `<p><strong>Custo de Jogo:</strong> ${card.play_cost}</p>` : ''}
+            ${card.attribute ? `<p><strong>Atributo:</strong> ${card.attribute}</p>` : ''}
+            ${card.form ? `<p><strong>Forma:</strong> ${card.form}</p>` : ''}
+            <hr>
+            ${card.main_effect ? `<p><strong>Efeito Principal:</strong><br>${formatEffectText(card.main_effect)}</p>` : ''}
+            ${card.source_effect ? `<p><strong>Efeito de Fonte (Segurança):</strong><br>${formatEffectText(card.source_effect)}</p>` : ''}
+        </div>
         `;
         modalOverlay.classList.remove('hidden');
-    }
+        }
 
     // Fecha o modal
     function closeModal() {
