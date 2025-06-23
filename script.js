@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${card.form ? `<p><strong>Forma:</strong> ${card.form}</p>` : ''}
             <hr>
             ${card.main_effect ? `<p><strong>Efeito Principal:</strong><br>${formatEffectText(card.main_effect)}</p>` : ''}
-            ${card.source_effect ? `<p><strong>Efeito de Fonte (Segurança):</strong><br>${formatEffectText(card.source_effect)}</p>` : ''}
+            ${card.source_effect ? `<p><strong>Efeito de Herança:</strong><br>${formatEffectText(card.source_effect)}</p>` : ''}
         </div>
         `;
         modalOverlay.classList.remove('hidden');
